@@ -45,7 +45,7 @@ export function describeEnv(env = readEnvFile()) {
   return `Values from .env: ${set.length ? set.join(', ') : 'none set'}.`;
 }
 
-function findClaude() {
+export function findClaude() {
   try {
     execFileSync('claude', ['--version'], { stdio: 'ignore' });
     return 'claude';
@@ -98,25 +98,7 @@ function configureClaude(env) {
   return 0;
 }
 
-function updatePlugin() {
-  const claude = findClaude();
-  if (!claude) {
-    console.error('Claude Code CLI not found. Install it (https://code.claude.com).');
-    return 1;
-  }
-  for (const args of [
-    ['plugin', 'marketplace', 'update', 'leanscope'],
-    ['plugin', 'update', PLUGIN, '--scope', 'project'],
-  ]) {
-    const result = spawnSync(claude, args, { stdio: 'inherit' });
-    if (result.status !== 0) return result.status ?? 1;
-  }
-  console.log('Start a new Claude Code session (or reload the window) to use the new version.');
-  return 0;
-}
-
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
-  if (process.argv.includes('--update-plugin')) process.exit(updatePlugin());
   const env = readEnvFile();
   console.log(describeEnv(env));
   if (process.argv.includes('--claude')) process.exit(configureClaude(env));

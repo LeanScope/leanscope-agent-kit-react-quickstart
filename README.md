@@ -102,7 +102,7 @@ https://dev.api.agents.leanscope.ai/api/v1/docs.
 | `npm run build`          | Type-check and create a production build in `dist/` |
 | `npm run preview`        | Preview the production build locally                |
 | `npm run connect:claude` | Store the `.env` values in the Agent Kit plugin     |
-| `npm run update:plugin`  | Update the Agent Kit plugin for Claude Code         |
+| `npm run update:plugin`  | Update the Agent Kit plugin in every coding agent that has it |
 
 ## Other coding agents
 
@@ -118,6 +118,9 @@ npx -y github:leanscope/leanscope-agent-kit --clients cursor
 
 Diagnose a connection with `npx -y github:leanscope/leanscope-agent-kit --check --clients <client>`.
 See the [Agent Kit README](https://github.com/leanscope/leanscope-agent-kit) for details.
+
+To update the plugin later, run `npm run update:plugin`. VS Code and Cursor don't update it on
+their own.
 
 ## Security: development only
 

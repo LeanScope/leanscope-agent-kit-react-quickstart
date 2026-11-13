@@ -1,5 +1,13 @@
 # Release notes
 
+## 0.1.2 — 2026-11-13
+
+- **The app opens from LeanScope Classic.** When the agent server's `run-choreo` plugin opens
+  the app at the theme's `uiBaseUrl` (e.g. `http://localhost:5173/`) with `?sessionToken=…`, the
+  session page follows the session the plugin created instead of creating its own. The new
+  `LeanScopeSession.attach(sessionToken)` needs no access token, choreo guid or LLM key. An
+  unknown or ended session now shows an error.
+
 ## 0.1.1 — 2026-11-11
 
 - **`npm run update:plugin` works for every coding agent, not only Claude Code.** It finds each

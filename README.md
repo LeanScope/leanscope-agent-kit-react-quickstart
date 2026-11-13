@@ -93,6 +93,19 @@ function OnboardingPage() {
 (`inventory`, `tool_activity`, `tts_audio`, …). The full API is at
 https://dev.api.agents.leanscope.ai/api/v1/docs.
 
+## Open the app from LeanScope Classic
+
+The agent server's `run-choreo` plugin can open this app instead of its own UI:
+
+1. In LeanScope, set the theme's `uiBaseUrl` parameter to `http://localhost:5173/`.
+2. Run `npm start`.
+3. Run the choreo from LeanScope Classic.
+
+The plugin creates the session and opens `http://localhost:5173/?sessionToken=<token>`. The app
+then shows the session page, which calls `client.attach(token)` instead of `start()`. Attaching
+needs no access token, choreo guid or LLM key: the session token authorizes every session route.
+The agent server must be the one in `environment.leanscope.agentServerUrl`.
+
 ## Scripts
 
 | Command                  | Purpose                                             |

@@ -18,7 +18,11 @@ export function SessionPage() {
   const [sending, setSending] = useState(false);
 
   useEffect(() => {
-    if (!client.isActive) void client.start();
+    // `?sessionToken=…`: LeanScope opened the app at the theme's `uiBaseUrl` and already created
+    // the session. Follow it instead of creating one.
+    const token = new URLSearchParams(window.location.search).get('sessionToken')?.trim();
+    if (token) void client.attach(token);
+    else if (!client.isActive) void client.start();
     return () => client.stop();
   }, [client]);
 
@@ -38,7 +42,7 @@ export function SessionPage() {
         <span className="state" data-state={snapshot.state} aria-live="polite">
           {STATE_LABELS[snapshot.state]}
         </span>
-        {snapshot.session && (
+        {snapshot.session?.uiUrl && (
           <a href={snapshot.session.uiUrl} target="_blank" rel="noreferrer">
             Open in LeanScope
           </a>

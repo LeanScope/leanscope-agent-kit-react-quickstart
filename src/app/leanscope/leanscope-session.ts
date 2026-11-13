@@ -116,6 +116,46 @@ export class LeanScopeSession {
     }
   }
 
+  /**
+   * Follows a session someone else created, e.g. the agent server's `run-choreo` plugin when
+   * LeanScope opens this app at the theme's `uiBaseUrl` with `?sessionToken=…`. Needs no access
+   * token, choreo guid or keys: the token in the controller URL authorizes every session route.
+   * Resolves `true` when the session was found.
+   */
+  async attach(sessionToken: string): Promise<boolean> {
+    this.stop();
+    const run = this.run;
+    const token = sessionToken.trim();
+    const server = this.config.agentServerUrl.trim().replace(/\/+$/, '');
+    if (!token || !server) {
+      this.fail(token ? 'Missing configuration: agentServerUrl.' : 'Missing session token.');
+      return false;
+    }
+
+    this.update({
+      session: {
+        sessionId: '',
+        sessionScenarioGuid: '',
+        sessionToken: token,
+        controllerUrl: `${server}/api/v1/sessions/${encodeURIComponent(token)}`,
+        uiUrl: '',
+        markdown: '',
+      },
+      state: 'waiting',
+    });
+
+    try {
+      await this.loadHistory(run);
+      if (run !== this.run || this.snapshot.state === 'error') return false;
+      this.follow(run);
+      void this.refreshPending();
+      return true;
+    } catch (error) {
+      if (run === this.run) this.fail(messageOf(error));
+      return false;
+    }
+  }
+
   async begin(): Promise<void> {
     const response = await this.call('/start', { method: 'POST' });
     if (response && !response.ok)
@@ -167,6 +207,11 @@ export class LeanScopeSession {
     const response = await this.call('/history');
     if (run !== this.run) return;
     if (!response) throw new Error('Could not load the session history.');
+    if (response.status === 404)
+      throw new Error(
+        'The agent server does not know this session (wrong session token or agent server).',
+      );
+    if (response.status === 410) throw new Error('This session has already ended.');
     if (!response.ok)
       throw new Error(
         `Could not load the session history (${response.status}): ${await errorText(response)}`,

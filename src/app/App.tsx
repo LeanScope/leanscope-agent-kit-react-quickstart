@@ -7,7 +7,10 @@ import { LeanScopeSession } from './leanscope/leanscope-session';
 
 export function App() {
   const session = useMemo(() => new LeanScopeSession(environment.leanscope), []);
-  const isSession = window.location.pathname.replace(/\/+$/, '') === '/session';
+  // LeanScope opens the app at the theme's `uiBaseUrl` with `?sessionToken=…`: show that session.
+  const isSession =
+    window.location.pathname.replace(/\/+$/, '') === '/session' ||
+    new URLSearchParams(window.location.search).has('sessionToken');
 
   return (
     <LeanScopeSessionProvider session={session}>

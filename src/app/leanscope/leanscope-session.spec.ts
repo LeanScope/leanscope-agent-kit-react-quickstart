@@ -141,4 +141,34 @@ describe('LeanScopeSession', () => {
     expect(fetcher).not.toHaveBeenCalled();
     expect(missing.getSnapshot().error).toContain('LEANSCOPE_PERSONAL_TEAM_REPOS_ACCESS_TOKEN');
   });
+
+  it('attaches to a session created elsewhere, without token, choreo or keys', async () => {
+    const server = fakeServer();
+    const session = new LeanScopeSession(
+      {
+        ...config,
+        agentServerUrl: `${serverUrl}/`,
+        choreoScenarioGuid: '',
+        accessToken: '',
+        apiKeys: {},
+      },
+      server.fetcher,
+    );
+    expect(await session.attach(' token ')).toBe(true);
+
+    expect(server.calls.some((c) => c.url === `${serverUrl}/api/v1/sessions`)).toBe(false);
+    expect(session.getSnapshot().session?.controllerUrl).toBe(controllerUrl);
+    expect(session.getSnapshot().state).toBe('waiting');
+    expect(session.getSnapshot().steps.map((s) => s.line)).toEqual(['Hello!']);
+
+    server.emit('gate', { state: 'open' });
+    await vi.waitFor(() => expect(session.getSnapshot().state).toBe('working'));
+  });
+
+  it('explains an unknown session token', async () => {
+    const session = new LeanScopeSession(config, fakeServer().fetcher);
+    expect(await session.attach('unknown')).toBe(false);
+    expect(session.getSnapshot().state).toBe('error');
+    expect(session.getSnapshot().error).toContain('does not know this session');
+  });
 });
